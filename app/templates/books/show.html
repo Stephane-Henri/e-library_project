@@ -1,0 +1,154 @@
+{% extends 'base.html' %} {% block content %}
+<div class="title-area position-relative">
+  <div
+    class="h-100 w-100 py-5 d-flex text-center position-absolute"
+    style="background-color: rgba(0, 0, 0, 0.65)"
+  >
+    <div class="m-auto">
+      <h1 class="title mb-3 font-weight-bold">{{ book.name}}</h1>
+      <p class="mb-3 mx-auto">
+        {{ book.created_at}} | {{ book.author }} | <span>★</span>
+        <span>{{ "%.2f" | format(book.rating) }}</span> | {{ reviews_count }} {%
+        if reviews_count % 10 == 1%}ratings{%elif reviews_count % 10 == 2 or
+        reviews_count % 10 == 3 or reviews_count % 10 == 4%}ratings{% else
+        %}ratings{% endif%}
+      </p>
+      <div class="container">
+        <p class="description w-75 mb-5 mx-auto">
+          Publisher: {{ book.publishing_house }}
+        </p>
+      </div>
+      {% if current_user.can('show_collections') %}
+      <button
+        type="button"
+        class="btn btn-light"
+        data-bs-toggle="modal"
+        data-bs-target="#addBookInCollection{{ book.id }}"
+      >
+        Add to selection
+      </button>
+
+      <div
+        class="modal fade"
+        id="addBookInCollection{{ book.id }}"
+        tabindex="-1"
+        aria-labelledby="addBookInCollection"
+        aria-hidden="true"
+        style="color: black; text-align: left"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Add a book to the collection</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>
+                To add a book <span>"{{ book.name }}"</span> to the selection,
+                select from those already existing in the list:
+              </p>
+              <form
+                class=""
+                action="{{ url_for('collections.add_book', book_id = book.id) }}"
+                method="POST"
+              >
+                <select
+                  class="form-select"
+                  name="collection_id"
+                  id="collection"
+                >
+                  {% for collection in collections %}
+                  <option value="{{ collection.id }}">
+                    {{ collection.name }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <input class="d-none" type="submit" id="addBookInCollection" />
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+              <label for="addBookInCollection" class="btn btn-primary"
+                >Add</label
+              >
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <section class="about mb-5">
+    <h2 class="mb-3 text-center text-uppercase font-weight-bold">
+      About the book
+    </h2>
+    <div>{{ book.short_desc|safe }}</div>
+    <p>Genre(s):</p>
+    <ul>
+      {% for genre in book.genres %}
+      <li>{{ genre.name }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="review mb-5">
+    <div class="reviews-list container-fluid mt-3 mb-3">
+      <h2 class="mb-3 text-center text-uppercase font-weight-bold">
+        Reviews of the book
+      </h2>
+      {% if current_user.is_authenticated %} {% if not review %}
+      <div class="text-center mb-3">
+        <a
+          class="btn btn-dark"
+          href="{{ url_for('books.give_review', book_id=book.id) }}"
+        >
+          Leave a review for the course
+        </a>
+      </div>
+      {%else%}
+      <div class="card border-dark mb-3">
+        <div class="card-header">Your review from {{review.created_at}}</div>
+        <div class="card-body">
+          <h5 class="card-title">Rating: {{ review.rating_word }}</h5>
+          <div class="card-text">{{ review.text|safe }}</div>
+        </div>
+      </div>
+      {%endif%} {%endif%} {% for review in book_reviews %} {% if current_user.id
+      != review.user_id %}
+      <div class="card my-3">
+        <h5 class="card-header">{{ review.user.full_name }}</h5>
+        <span class="px-3">{{ review.created_at }}</span>
+        <div class="card-body">
+          <h5 class="card-title">Rating: {{ review.rating_word }}</h5>
+          <div class="card-text">{{ review.text|safe }}</div>
+        </div>
+      </div>
+      {%endif%} {% endfor %}
+    </div>
+    {% if reviews_count > 5 %}
+    <div class="d-flex justify-content-end">
+      <a
+        class="btn btn-outline-dark ms-auto fs-4 mt-2"
+        href="{{ url_for('books.reviews', book_id=book.id) }}"
+        >Show all reviews</a
+      >
+    </div>
+    {% endif %}
+  </section>
+</div>
+
+{% endblock %}
