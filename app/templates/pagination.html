@@ -1,0 +1,40 @@
+{% macro render_pagination(pagination, endpoint, params={}) %}
+<nav>
+  <ul class="pagination justify-content-center">
+    <li
+      class="page_books-item {% if not pagination.has_prev %}disabled{% endif %}"
+    >
+      <a
+        class="page_books-link"
+        href="{{ url_for(endpoint, page_books=(pagination.page_books - 1), **params) if pagination.has_prev else '#' }}"
+        aria-label="Previous"
+      >
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {%- for page_books in pagination.iter_page_bookss() %} {% if page_books %}
+    <li
+      class="page_books-item {% if page_books == pagination.page_books %}active{% endif %}"
+    >
+      <a
+        class="page_books-link"
+        href="{{ url_for(endpoint, page_books=page_books, **params) }}"
+      >
+        {{ page_books }}
+      </a>
+    </li>
+    {% endif %} {%- endfor %}
+    <li
+      class="page_books-item {% if not pagination.has_next %}disabled{% endif %}"
+    >
+      <a
+        class="page_books-link"
+        href="{{ url_for(endpoint, page_books=(pagination.page_books + 1), **params) if pagination.has_next else '#' }}"
+        aria-label="Next"
+      >
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endmacro %}
